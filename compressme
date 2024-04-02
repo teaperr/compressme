@@ -1,0 +1,91 @@
+#!/bin/bash
+
+usage() {
+    echo "-h | --help       ; Show this dialog."
+    echo "-i | --input      ; Specify input file."
+    echo "-t | --target     ; Specify target size (k, m, G)."
+    echo "-o | --output     ; Specify output file name."
+    echo "-e | --encoder    ; Specify encoder type."
+    echo "--exact           ; Skips removing 5% of the total bitrate to get closer to the target size."
+    echo "Please put all file names in 'single quotes'."
+    echo "Example: compressme -i 'input.mp4' -t 24m -e libx264 -o output.mp4"
+}
+
+# check if there are no args
+if [ $# -eq 0 ]; then
+    usage
+    exit 1
+fi
+
+input_file=""
+output_file=""
+# default encoder as h264 :3
+encoder_type="libx264"
+target=""
+exact=false
+
+while [ $# -gt 0 ]; do 
+    case "$1" in
+        -h|--help) usage ;;
+        -i|--input) input_file="$2"; shift 2 ;;
+        -o|--output) output_file="$2"; shift 2 ;;
+        -t|--target) target="$2"; shift 2 ;;
+        -e|--encoder) encoder_type="$2" shift 2 ;;
+        --exact) exact=true; shift 2;;
+        *) echo "Invalid argument: $1"; exit 1 ;;
+    esac
+done
+
+case "${target: -1}" in
+    k|kb) target_kb="${target:0:-1}";;
+    m|mb|M) target_kb="$((${target:0:-1} * 1024))";;
+    G|GB|Gb|gb) target_kb="$((${target:0:-1} * 1024 * 1024))";;
+    %) target_kb=$(echo "$(du -k "$input_file" | cut -f1) * ${target:0:-1} / 100" | bc);;
+    *) target_kb="${target:0:-1}"; echo "Invalid suffix: ${target: -1}"; exit 1;;
+esac
+
+input_file_length=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$input_file" | awk '{print int($0)}')
+
+# Calculate target bitrate in bits per second (bps)
+if [ "$exact" == true ]; then
+    target_bitrate=$((($target_kb * 1024 * 8) / $input_file_length))
+else
+    target_bitrate=$(printf "%.0f" "$(echo "($target_kb * 1024 * 8 * 0.95) / $input_file_length" | bc)")
+fi
+
+if [ "$target_kb" -gt "$(du -k "$input_file" | awk '{print $1}')" ]; then
+    echo "Target file size is bigger than current file size, exiting..."
+    exit 1
+fi
+
+if [ -z "$output_file" ]; then
+    while true; do
+        read -rp "Output filename has not been specified. Use ${input_file%.*}-compressed.${input_file##*.}? (y/n) " yn
+        case $yn in
+            [Yy]* ) output_file="${input_file%.*}-compressed.${input_file##*.}"; break;;
+            [Nn]* ) exit;;
+            *) exit;;
+        esac
+    done
+fi
+
+# check if output file already exists
+if [ -e "$output_file" ]; then
+    while true; do
+        read -rp "Output file already exists. Do you want to overwrite it? (y/n) " overwrite_response
+        case $overwrite_response in
+            [Yy]* ) echo "Overwriting file..."; break;;
+            [Nn]* ) exit 1;;
+            *) exit 1;;
+        esac
+    done
+fi
+
+# echo "Debugging"
+# echo "input_file: $input_file"
+# echo "output_file: $output_file"
+# echo "target_bitrate: $target_bitrate"
+# echo "target_kb: $target_kb"
+# echo "input_file_length: $input_file_length"
+
+ffmpeg -y -i "$input_file" -b:v "${target_bitrate}" -c:v "$encoder_type" "$output_file"
