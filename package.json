@@ -4,7 +4,9 @@
   "main": "compressme.js",
   "bin": "compressme.js",
   "scripts": {
-    "start": "node compressme.js"
+    "start": "node compressme.js",
+    "build": "pkg .",
+    "build-compressed": "pkg --compress GZip ."
   },
   "pkg": {
     "scripts": "compressme.js",

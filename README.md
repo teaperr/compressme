@@ -35,8 +35,13 @@ cd compressme
 sudo npm install -g pkg
 ```
 3) Compile
+For a compressed binary, run:
 ```bash
-pkg .
+npm run build-compressed
+```
+else:
+```bash
+npm run build
 ```
 
 Binaries should appear in the **dists** directory.
