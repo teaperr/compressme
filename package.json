@@ -1,0 +1,22 @@
+{
+  "name": "compressme",
+  "version": "1.0.0",
+  "main": "compressme.js",
+  "bin": "compressme.js",
+  "scripts": {
+    "start": "node compressme.js"
+  },
+  "pkg": {
+    "scripts": "compressme.js",
+    "targets": [
+      "node16-linux-x64",
+      "node16-macos-x64",
+      "node16-win-x64"
+    ],
+    "outputPath": "dist"
+  },
+  "dependencies": {
+    "yargs": "^17.2.1"
+  }
+}
+
