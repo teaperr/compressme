@@ -22,8 +22,7 @@ To install compressme on Windows, I'm guessing it's a similar process. If anyone
 ### Compiling from source
 Compiling from source is simple.
 
-##### Requirements
-node.js, npm
+Requirements: node.js, npm
 
 1) Clone the repository and cd into the project directory
 ```bash
