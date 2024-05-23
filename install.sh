@@ -1,16 +1,16 @@
 #!/bin/bash
 
-line='export PATH="$HOME/bin:$PATH"'
-install_dir="$HOME/bin"
+install_dir="/tmp"
 
-mkdir -p "$install_dir"
-curl -sSL https://raw.githubusercontent.com/teaperr/compressme/main/compressme -o "$install_dir/compressme"
-chmod +x "$install_dir/compressme"
-
-if ! grep -qF "$line" ~/.bashrc; then
-    echo "$line" >> ~/.bashrc
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    sudo curl -sSL https://github.com/teaperr/compressme/releases/latest/download/compressme-linux -o "$install_dir/compressme"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    sudo curl -sSL https://github.com/teaperr/compressme/releases/latest/download/compressme-macos -o "$install_dir/compressme"
+else
+    echo "Unknown OS type"
+    exit
 fi
 
-source ~/.bashrc
+sudo chmod +x "$install_dir/compressme"
 
 echo "Installation complete. You can now use Compressme!"
