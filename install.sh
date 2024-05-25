@@ -1,6 +1,6 @@
 #!/bin/bash
 
-install_dir="/tmp"
+install_dir="/usr/local/bin"
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sudo curl -sSL https://github.com/teaperr/compressme/releases/latest/download/compressme-linux -o "$install_dir/compressme"
